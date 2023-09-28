@@ -1,8 +1,49 @@
-import React from 'react'
+'use client'
+import React, { useEffect, useState } from 'react'
 import Header from '../components/heard/header'
 import Link from 'next/link'
+import { RiDeleteBinLine } from 'react-icons/ri';
+import { GrEdit } from 'react-icons/gr';
+
+
 
 export default function MainHome() {
+  const [data, setData] = useState({});
+
+  const fatchData = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/showtask");
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const result = await response.json();
+      console.log(result);
+      setData(result);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }
+
+  const handleDelete = async (taskId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/deletetask/${taskId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error("Delete request failed");
+      }
+
+      // Update the UI by removing the deleted task from the data array
+      setData((prevData) => prevData.filter((item) => item._id !== taskId));
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
+  useEffect(() => {
+    fatchData()
+  }, [])
   return (
     <div>
       <Header />
@@ -12,26 +53,28 @@ export default function MainHome() {
 
         <div className=" mt-16 w-11/12 m-auto flex flex-wrap">
 
-          <div className=" bg-slate-300 w-72 p-5 m-3 rounded">
-            <h1 className=' text-xl font-medium'>My Name IS Hello</h1>
-            <p className=' mt-2'>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nulla minus itaque corrupti labore et autem provident officiis vitae ipsum dolores saepe, voluptate praesentium ex non neque sequi. Quasi, itaque omnis.</p>
-          </div>
-          <div className=" bg-slate-300 w-72 p-5 m-3 rounded">
-            <h1 className=' text-xl font-medium'>My Name IS Hello</h1>
-            <p className=' mt-2'>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nulla minus itaque corrupti labore et autem provident officiis vitae ipsum dolores saepe, voluptate praesentium ex non neque sequi. Quasi, itaque omnis.</p>
-          </div>
-          <div className=" bg-slate-300 w-72 p-5 m-3 rounded">
-            <h1 className=' text-xl font-medium'>My Name IS Hello</h1>
-            <p className=' mt-2'>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nulla minus itaque corrupti labore et autem provident officiis vitae ipsum dolores saepe, voluptate praesentium ex non neque sequi. Quasi, itaque omnis.</p>
-          </div>
-          <div className=" bg-slate-300 w-72 p-5 m-3 rounded">
-            <h1 className=' text-xl font-medium'>My Name IS Hello</h1>
-            <p className=' mt-2'>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nulla minus itaque corrupti labore et autem provident officiis vitae ipsum dolores saepe, voluptate praesentium ex non neque sequi. Quasi, itaque omnis.</p>
-          </div>
-          <div className=" bg-slate-300 w-72 p-5 m-3 rounded">
-            <h1 className=' text-xl font-medium'>My Name IS Hello</h1>
-            <p className=' mt-2'>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nulla minus itaque corrupti labore et autem provident officiis vitae ipsum dolores saepe, voluptate praesentium ex non neque sequi. Quasi, itaque omnis.</p>
-          </div>
+          {Array.isArray(data) ? (
+            data.map((item) => (
+              <div className=" bg-indigo-200 w-72 p-5 m-3 rounded" key={item._id}>
+                <div className=' w-full justify-end snap-end text-right'>
+                  <button className=' bg-red-500 p-3 mr-2 text-white rounded-full' onClick={() => handleDelete(item._id)}>
+                    <RiDeleteBinLine />
+                  </button>
+                  <Link href='/edit'>
+                    <button className='bg-green-500 p-3 text-white rounded-full'>
+                      <GrEdit />
+                    </button>
+                  </Link>
+                </div>
+                <h1 className=' text-xl font-medium'>{item.title}</h1>
+                <p className=' mt-2'>{item.description}</p>
+                <p className=' mt-5 text-sm'>{item.time} & {item.day}</p>
+              </div>
+            ))
+          ) : (
+            <p className=' text-center text-9xl text-sky-600'>No data available</p>
+          )}
+
 
 
           {/* ================== Edit Card ================ */}
